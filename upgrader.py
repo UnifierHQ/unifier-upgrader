@@ -61,7 +61,7 @@ class Upgrader(commands.Cog):
                 'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
             with open('update.json', 'r') as file:
                 current = json.load(file)
-            with open('update_check/update_new.json', 'r') as file:
+            with open('update_check/update.json', 'r') as file:
                 new = json.load(file)
             release = new['release']
             version = new['version']
@@ -249,7 +249,7 @@ class Upgrader(commands.Cog):
                 'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
             with open('upgrader.json', 'r') as file:
                 current = json.load(file)
-            with open('update-check/upgrader_new.json', 'r') as file:
+            with open('update-check/upgrader.json', 'r') as file:
                 new = json.load(file)
             release = new['release']
             version = new['version']
