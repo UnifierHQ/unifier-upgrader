@@ -174,7 +174,7 @@ class Upgrader(commands.Cog):
             log(type='GIT',status='info',content='Purging old update files')
             os.system('rm -rf '+os.getcwd()+'/update')
             log(type='GIT', status='info', content='Downloading from remote repository...')
-            os.system('git clone --branch '+branch+' '+files_endpoint+' '+os.getcwd()+'/update')
+            os.system('git clone --branch '+branch+' '+files_endpoint+'/unifier.git '+os.getcwd()+'/update')
             log(type='GIT', status='info', content='Confirming download...')
             x = open(os.getcwd() + '/update/update.json', 'r')
             x.close()
@@ -249,7 +249,7 @@ class Upgrader(commands.Cog):
                 'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
             with open('upgrader.json', 'r') as file:
                 current = json.load(file)
-            with open('update-check/upgrader.json', 'r') as file:
+            with open('update_check/upgrader.json', 'r') as file:
                 new = json.load(file)
             release = new['release']
             version = new['version']
