@@ -333,7 +333,7 @@ class Upgrader(commands.Cog):
             log(type='GIT', status='info', content='Downloading from remote repository...')
             status(os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader'))
             log(type='GIT', status='info', content='Confirming download...')
-            x = open(os.getcwd() + '/update_upgrader/update.json', 'r')
+            x = open(os.getcwd() + '/update_upgrader/upgrader.py', 'r')
             x.close()
             log(type='GIT', status='ok', content='Download confirmed, proceeding with upgrade')
         except:
