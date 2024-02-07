@@ -20,7 +20,6 @@ import discord
 from discord.ext import commands
 import os
 import json
-import requests
 
 def log(type='???',status='ok',content='None'):
     from time import gmtime, strftime
@@ -36,6 +35,10 @@ def log(type='???',status='ok',content='None'):
     else:
         raise ValueError('Invalid status type provided')
     print(f'[{type} | {time1} | {status}] {content}')
+
+def status(code):
+    if code != 0:
+        raise RuntimeError("upgrade failed")
 
 with open('config.json', 'r') as file:
     data = json.load(file)
@@ -191,12 +194,12 @@ class Upgrader(commands.Cog):
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/unifier.py')
-            os.system('cp ' + os.getcwd() + '/update/unifier.py ' + os.getcwd() + '/unifier.py')
+            status(os.system('cp ' + os.getcwd() + '/update/unifier.py ' + os.getcwd() + '/unifier.py'))
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/update.json')
-            os.system('cp ' + os.getcwd() + '/update_check/update.json ' + os.getcwd() + '/update.json')
+            status(os.system('cp ' + os.getcwd() + '/update_check/update.json ' + os.getcwd() + '/update.json'))
             for file in os.listdir(os.getcwd() + '/update/cogs'):
                 log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/cogs/'+file)
-                os.system('cp ' + os.getcwd() + '/update/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file)
+                status(os.system('cp ' + os.getcwd() + '/update/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file))
             if should_reboot:
                 log(type='UPG', status='ok', content='Upgrade complete, reboot required')
                 embed.title = 'Restart to apply upgrade'
@@ -219,16 +222,16 @@ class Upgrader(commands.Cog):
             embed.title = 'Upgrade failed'
             try:
                 log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/unifier.py')
-                os.system('cp ' + os.getcwd() + '/old/unifier.py ' + os.getcwd() + '/unifier.py')
+                status(os.system('cp ' + os.getcwd() + '/old/unifier.py ' + os.getcwd() + '/unifier.py'))
                 log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/data.json')
-                os.system('cp ' + os.getcwd() + '/old/data.json ' + os.getcwd() + '/data.json')
+                status(os.system('cp ' + os.getcwd() + '/old/data.json ' + os.getcwd() + '/data.json'))
                 log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/update.json')
-                os.system('cp ' + os.getcwd() + '/old/update.json ' + os.getcwd() + '/update.json')
+                status(os.system('cp ' + os.getcwd() + '/old/update.json ' + os.getcwd() + '/update.json'))
                 log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/config.json')
-                os.system('cp ' + os.getcwd() + '/old/config.json ' + os.getcwd() + '/config.json')
+                status(os.system('cp ' + os.getcwd() + '/old/config.json ' + os.getcwd() + '/config.json'))
                 for file in os.listdir(os.getcwd() + '/old/cogs'):
                     log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/cogs/'+file)
-                    os.system('cp ' + os.getcwd() + '/old/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file)
+                    status(os.system('cp ' + os.getcwd() + '/old/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file))
                 log(type='RBK', status='ok', content='Rollback success')
                 embed.description = 'The upgrade failed, and all files have been rolled back.'
             except:
@@ -245,8 +248,8 @@ class Upgrader(commands.Cog):
         msg = await ctx.send(embed=embed)
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
-            os.system(
-                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
+            status(os.system(
+                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check'))
             with open('upgrader.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/upgrader.json', 'r') as file:
@@ -326,9 +329,9 @@ class Upgrader(commands.Cog):
         try:
             print('')
             log(type='GIT', status='info', content='Purging old update files')
-            os.system('rm -rf ' + os.getcwd() + '/update_upgrader')
+            status(os.system('rm -rf ' + os.getcwd() + '/update_upgrader'))
             log(type='GIT', status='info', content='Downloading from remote repository...')
-            os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader')
+            status(os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader'))
             log(type='GIT', status='info', content='Confirming download...')
             x = open(os.getcwd() + '/update_upgrader/update.json', 'r')
             x.close()
@@ -344,10 +347,10 @@ class Upgrader(commands.Cog):
             log(type='INS', status='info', content='Installing upgrades')
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_upgrader/cogs/upgrader.py')
-            os.system('cp ' + os.getcwd() + '/update/cogs/upgrader.py' + ' ' + os.getcwd() + '/cogs/upgrader.py')
+            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_upgrader/upgrader.py')
+            status(os.system('cp ' + os.getcwd() + '/update/upgrader.py' + ' ' + os.getcwd() + '/cogs/upgrader.py'))
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/upgrader.json')
-            os.system('cp ' + os.getcwd() + '/update_check/upgrader.json' + ' ' + os.getcwd() + '/upgrader.json')
+            status(os.system('cp ' + os.getcwd() + '/update_check/upgrader.json' + ' ' + os.getcwd() + '/upgrader.json'))
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
             await msg.edit(embed=embed)
             log(type='UPG', status='ok', content='Restarting extension: cogs.upgrader')
