@@ -192,8 +192,8 @@ class Upgrader(commands.Cog):
             await msg.edit(embed=embed)
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/unifier.py')
             os.system('cp ' + os.getcwd() + '/update/unifier.py ' + os.getcwd() + '/unifier.py')
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/update.json')
-            os.system('cp ' + os.getcwd() + '/update/update.json ' + os.getcwd() + '/update.json')
+            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/update.json')
+            os.system('cp ' + os.getcwd() + '/update_check/update.json ' + os.getcwd() + '/update.json')
             for file in os.listdir(os.getcwd() + '/update/cogs'):
                 log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/cogs/'+file)
                 os.system('cp ' + os.getcwd() + '/update/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file)
@@ -346,6 +346,8 @@ class Upgrader(commands.Cog):
             await msg.edit(embed=embed)
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_upgrader/cogs/upgrader.py')
             os.system('cp ' + os.getcwd() + '/update/cogs/upgrader.py' + ' ' + os.getcwd() + '/cogs/upgrader.py')
+            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/upgrader.json')
+            os.system('cp ' + os.getcwd() + '/update_check/upgrader.json' + ' ' + os.getcwd() + '/upgrader.json')
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
             await msg.edit(embed=embed)
             log(type='UPG', status='ok', content='Restarting extension: cogs.upgrader')
