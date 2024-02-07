@@ -301,8 +301,8 @@ class Upgrader(commands.Cog):
             return await interaction.response.edit_message(components=components)
         print('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
-        embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.`\n- :wrench: Any modifications you made to Unifier Upgrader will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
-        await msg.edit(embed=embed, components=components)
+        embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Unifier Upgrader will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
+        await interaction.response.edit_message(embed=embed, components=components)
         try:
             interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
         except:
@@ -321,14 +321,14 @@ class Upgrader(commands.Cog):
         print()
         embed.title = 'Upgrading Unifier Upgrader'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
-        await msg.edit(embed=embed, components=None)
+        await interaction.response.edit_message(embed=embed, components=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             print('')
             log(type='GIT', status='info', content='Purging old update files')
             os.system('rm -rf ' + os.getcwd() + '/update_upgrader')
             log(type='GIT', status='info', content='Downloading from remote repository...')
-            os.system('git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update')
+            os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader')
             log(type='GIT', status='info', content='Confirming download...')
             x = open(os.getcwd() + '/update_upgrader/update.json', 'r')
             x.close()
