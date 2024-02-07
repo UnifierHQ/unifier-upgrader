@@ -56,11 +56,12 @@ class Upgrader(commands.Cog):
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
         try:
-            r = requests.get(check_endpoint+"/"+branch+"/update.json",headers={'Cache-Control': 'no-cache'})
-            open('update_new.json','wb').write(r.content)
+            os.system('rm -rf ' + os.getcwd() + '/update_check')
+            os.system(
+                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
             with open('update.json', 'r') as file:
                 current = json.load(file)
-            with open('update_new.json', 'r') as file:
+            with open('update_check/update_new.json', 'r') as file:
                 new = json.load(file)
             release = new['release']
             version = new['version']
@@ -243,11 +244,12 @@ class Upgrader(commands.Cog):
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
         try:
-            r = requests.get(check_endpoint + "/" + branch + "/upgrader.json", headers={'Cache-Control': 'no-cache'})
-            open('upgrader_new.json', 'wb').write(r.content)
+            os.system('rm -rf ' + os.getcwd() + '/update_check')
+            os.system(
+                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
             with open('upgrader.json', 'r') as file:
                 current = json.load(file)
-            with open('upgrader_new.json', 'r') as file:
+            with open('update-check/upgrader_new.json', 'r') as file:
                 new = json.load(file)
             release = new['release']
             version = new['version']
