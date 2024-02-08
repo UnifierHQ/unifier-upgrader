@@ -376,6 +376,7 @@ class Upgrader(commands.Cog):
             log(type='UPG', status='error', content='Upgrade failed')
             embed.title = 'Upgrade failed'
             embed.description = 'The upgrade failed.'
+            embed.colur = 0xff0000
             await msg.edit(embed=embed)
             raise
 
