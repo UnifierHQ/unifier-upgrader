@@ -53,9 +53,13 @@ class Upgrader(commands.Cog):
         self.bot = bot
 
     @commands.command(hidden=True, aliases=['update'])
-    async def upgrade(self, ctx):
+    async def upgrade(self, ctx, *, args):
         if not ctx.author.id == 356456393491873795:
             return
+        args = args.split(' ')
+        force = False
+        if 'force' in args:
+            force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
         try:
@@ -69,6 +73,8 @@ class Upgrader(commands.Cog):
             release = new['release']
             version = new['version']
             update_available = new['release'] > current['release']
+            if force:
+                update_available = new['release'] >= current['release']
             should_reboot = new['reboot'] >= current['release']
             try:
                 desc = new['description']
@@ -241,9 +247,13 @@ class Upgrader(commands.Cog):
             raise
 
     @commands.command(name='upgrade-upgrader', hidden=True, aliases=['update-upgrader'])
-    async def upgrade_upgrader(self, ctx):
+    async def upgrade_upgrader(self, ctx, *, args):
         if not ctx.author.id == 356456393491873795:
             return
+        args = args.split(' ')
+        force = False
+        if 'force' in args:
+            force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
         try:
@@ -257,6 +267,8 @@ class Upgrader(commands.Cog):
             release = new['release']
             version = new['version']
             update_available = new['release'] > current['release']
+            if force:
+                update_available = new['release'] >= current['release']
             try:
                 desc = new['description']
             except:
