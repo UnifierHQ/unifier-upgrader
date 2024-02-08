@@ -53,7 +53,7 @@ class Upgrader(commands.Cog):
         self.bot = bot
 
     @commands.command(hidden=True, aliases=['update'])
-    async def upgrade(self, ctx, *, args):
+    async def upgrade(self, ctx, *, args=''):
         if not ctx.author.id == 356456393491873795:
             return
         args = args.split(' ')
@@ -247,7 +247,7 @@ class Upgrader(commands.Cog):
             raise
 
     @commands.command(name='upgrade-upgrader', hidden=True, aliases=['update-upgrader'])
-    async def upgrade_upgrader(self, ctx, *, args):
+    async def upgrade_upgrader(self, ctx, *, args=''):
         if not ctx.author.id == 356456393491873795:
             return
         args = args.split(' ')
