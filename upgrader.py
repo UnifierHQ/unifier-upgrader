@@ -360,7 +360,7 @@ class Upgrader(commands.Cog):
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_upgrader/upgrader.py')
-            status(os.system('cp ' + os.getcwd() + '/update/upgrader.py' + ' ' + os.getcwd() + '/cogs/upgrader.py'))
+            status(os.system('cp ' + os.getcwd() + '/update_upgrader/upgrader.py' + ' ' + os.getcwd() + '/cogs/upgrader.py'))
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/upgrader.json')
             status(os.system('cp ' + os.getcwd() + '/update_check/upgrader.json' + ' ' + os.getcwd() + '/upgrader.json'))
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
