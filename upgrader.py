@@ -179,7 +179,6 @@ class Upgrader(commands.Cog):
         await msg.edit(embed=embed, components=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
-            print('')
             log(type='GIT',status='info',content='Purging old update files')
             os.system('rm -rf '+os.getcwd()+'/update')
             log(type='GIT', status='info', content='Downloading from remote repository...')
@@ -339,7 +338,6 @@ class Upgrader(commands.Cog):
         await interaction.response.edit_message(embed=embed, components=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
-            print('')
             log(type='GIT', status='info', content='Purging old update files')
             status(os.system('rm -rf ' + os.getcwd() + '/update_upgrader'))
             log(type='GIT', status='info', content='Downloading from remote repository...')
