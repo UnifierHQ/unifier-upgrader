@@ -20,6 +20,7 @@ import discord
 from discord.ext import commands
 import os
 import json
+import time
 
 def log(type='???',status='ok',content='None'):
     from time import gmtime, strftime
@@ -39,6 +40,18 @@ def log(type='???',status='ok',content='None'):
 def status(code):
     if code != 0:
         raise RuntimeError("upgrade failed")
+
+def reboot(service,bootscript,directory=None):
+    pid = os.popen("screen -ls | awk '/."+str(service)+"\t/ {print strtonum($1)}'").read()
+    pid = int(pid)
+
+    if not directory==None:
+        os.system(f"screen -S {service} -dm bash -c 'cd {directory} && exec python3.11 {bootscript}'")
+    else:
+        os.system('screen -S '+str(service)+' -dm python3.11 '+bootscript)
+
+    if service=='unifier':
+        os.system('screen -X -S %s quit' % pid)
 
 with open('config.json', 'r') as file:
     data = json.load(file)
@@ -207,10 +220,29 @@ class Upgrader(commands.Cog):
                 status(os.system('cp ' + os.getcwd() + '/update/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file))
             if should_reboot:
                 log(type='UPG', status='ok', content='Upgrade complete, reboot required')
+                t = round(time.time())+60
                 embed.title = 'Restart to apply upgrade'
-                embed.description = 'The upgrade was successful. Please reboot Unifier to apply the upgrades.'
+                embed.description = f'The upgrade was successful. The bot will reboot <t:{t}:R> to apply the upgrades.'
                 embed.colour = 0x00ff00
-                await msg.edit(embed=embed)
+                components = discord.ui.MessageComponents(
+                    discord.ui.ActionRow(
+                        discord.ui.Button(style=discord.ButtonStyle.gray, label='Cancel',
+                                          disabled=False)
+                    )
+                )
+                await msg.edit(embed=embed,components=components)
+                try:
+                    interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+                    embed.title = 'Restart delayed'
+                    embed.description = 'Reboot was cancelled, please reboot the bot manually.'
+                    return await interaction.response.edit_message(embed=embed,components=None)
+                except:
+                    embed.title = 'Restarting...'
+                    embed.description = 'The bot will reboot NOW!'
+                    await msg.edit(embed=embed,components=None)
+                    reboot('unifier','unifier.py','unifier')
+                    return
+
             else:
                 embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
                 await msg.edit(embed=embed)
