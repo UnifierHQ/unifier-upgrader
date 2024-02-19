@@ -189,7 +189,7 @@ class Upgrader(commands.Cog):
         print()
         embed.title = 'Upgrading Unifier'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
-        await msg.edit(embed=embed, components=None)
+        await interaction.response.edit_message(embed=embed, components=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             log(type='GIT',status='info',content='Purging old update files')
