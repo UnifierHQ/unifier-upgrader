@@ -57,7 +57,10 @@ branch = data['branch']
 check_endpoint = data['check_endpoint']
 files_endpoint = data['files_endpoint']
 
-class Upgrader(commands.Cog):
+class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
+    """Upgrader makes it easy for Unifier admins to update the bot to the latest version.
+
+    Developed by Green"""
     def __init__(self,bot):
         self.bot = bot
 
