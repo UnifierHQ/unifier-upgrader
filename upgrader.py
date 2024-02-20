@@ -81,6 +81,14 @@ class Upgrader(commands.Cog):
                 current = json.load(file)
             with open('update_check/update.json', 'r') as file:
                 new = json.load(file)
+            with open('upgrader.json', 'r') as file:
+                current_up = json.load(file)
+            with open('update_check/upgrader.json', 'r') as file:
+                new_up = json.load(file)
+            if new_up['release'] > current_up['release']:
+                embed.colour = 0xff0000
+                embed.title = 'Upgrader outdated'
+                embed.description = f'Your Unifier Upgrader is outdated. Please run `{self.bot.command_prefix}upgrade-upgrader`.'
             release = new['release']
             version = new['version']
             update_available = new['release'] > current['release']
@@ -306,7 +314,7 @@ class Upgrader(commands.Cog):
                 desc = 'No description is available for this upgrade.'
         except:
             embed.title = 'Failed to check for updates'
-            embed.description = 'Could not find a valid update.json file on remote'
+            embed.description = 'Could not find a valid upgrader.json file on remote'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
             raise
