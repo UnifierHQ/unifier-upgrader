@@ -41,22 +41,18 @@ def status(code):
     if code != 0:
         raise RuntimeError("upgrade failed")
 
-def reboot(service,bootscript,directory=None):
-    pid = os.popen("screen -ls | awk '/."+str(service)+"\t/ {print strtonum($1)}'").read()
+def reboot():
+    pid = os.popen("screen -ls | awk '/.unifier\t/ {print strtonum($1)}'").read()
     pid = int(pid)
 
-    if not directory==None:
-        os.system(f"screen -S {service} -dm bash -c 'cd {directory} && exec python3.11 {bootscript}'")
-    else:
-        os.system('screen -S '+str(service)+' -dm python3.11 '+bootscript)
-
-    if service=='unifier':
-        os.system('screen -X -S %s quit' % pid)
+    os.system(f"screen -S unifier -dm bash -c 'cd unifier && exec python3.11 unifier.py'")
+    os.system('screen -X -S %s quit' % pid)
 
 with open('config.json', 'r') as file:
     data = json.load(file)
 
 owner = data['owner']
+admins = data['admins']
 branch = data['branch']
 check_endpoint = data['check_endpoint']
 files_endpoint = data['files_endpoint']
@@ -67,11 +63,13 @@ class Upgrader(commands.Cog):
 
     @commands.command(hidden=True, aliases=['update'])
     async def upgrade(self, ctx, *, args=''):
-        if not ctx.author.id == 356456393491873795:
+        if not ctx.author.id in admins:
             return
         args = args.split(' ')
         force = False
         if 'force' in args:
+            if not ctx.author.id==owner:
+                return await ctx.send('Only the instance owner can force upgrades!')
             force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
@@ -279,11 +277,13 @@ class Upgrader(commands.Cog):
 
     @commands.command(name='upgrade-upgrader', hidden=True, aliases=['update-upgrader'])
     async def upgrade_upgrader(self, ctx, *, args=''):
-        if not ctx.author.id == 356456393491873795:
+        if not ctx.author.id in admins:
             return
         args = args.split(' ')
         force = False
         if 'force' in args:
+            if not ctx.author.id == owner:
+                return await ctx.send('Only the instance owner can force upgrades!')
             force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
