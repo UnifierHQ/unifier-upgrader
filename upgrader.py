@@ -45,7 +45,7 @@ def reboot():
     pid = os.popen("screen -ls | awk '/.unifier\t/ {print strtonum($1)}'").read()
     pid = int(pid)
 
-    os.system(f"screen -S unifier -dm bash -c 'cd unifier && exec python3.11 unifier.py'")
+    os.system(f"screen -S unifier -dm bash -c 'cd {os.getcwd()} && exec python3.11 unifier.py'")
     os.system('screen -X -S %s quit' % pid)
 
 with open('config.json', 'r') as file:
