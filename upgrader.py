@@ -89,6 +89,8 @@ class Upgrader(commands.Cog):
                 embed.colour = 0xff0000
                 embed.title = 'Upgrader outdated'
                 embed.description = f'Your Unifier Upgrader is outdated. Please run `{self.bot.command_prefix}upgrade-upgrader`.'
+                await msg.edit(embed=embed)
+                return
             release = new['release']
             version = new['version']
             update_available = new['release'] > current['release']
