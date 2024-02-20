@@ -381,7 +381,7 @@ class Upgrader(commands.Cog):
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             log(type='GIT', status='info', content='Purging old update files')
-            status(os.system('rm -rf ' + os.getcwd() + '/update_upgrader'))
+            os.system('rm -rf ' + os.getcwd() + '/update_upgrader')
             log(type='GIT', status='info', content='Downloading from remote repository...')
             status(os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader'))
             log(type='GIT', status='info', content='Confirming download...')
