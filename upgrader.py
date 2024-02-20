@@ -85,7 +85,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             if not ctx.author.id == owner:
                 return await ctx.send('Only the instance owner can skip backups!')
             no_backup = True
-        embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
+        embed = discord.Embed(title=':inbox_tray: Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
@@ -101,7 +101,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 new_up = json.load(file)
             if new_up['release'] > current_up['release']:
                 embed.colour = 0xff0000
-                embed.title = 'Upgrader outdated'
+                embed.title = ':warning: Upgrader outdated'
                 embed.description = f'Your Unifier Upgrader is outdated. Please run `{self.bot.command_prefix}upgrade-upgrader`.'
                 await msg.edit(embed=embed)
                 return
@@ -116,19 +116,19 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             except:
                 desc = 'No description is available for this upgrade.'
         except:
-            embed.title = 'Failed to check for updates'
+            embed.title = ':x: Failed to check for updates'
             embed.description = 'Could not find a valid update.json file on remote'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
             raise
         if not update_available:
-            embed.title = 'No updates available'
+            embed.title = ':white_check_mark: No updates available'
             embed.description = 'Unifier is up-to-date.'
             embed.colour = 0x00ff00
             return await msg.edit(embed=embed)
         print('Upgrade available: '+current['version']+' ==> '+new['version'])
         print('Confirm upgrade through Discord.')
-        embed.title = 'Update available'
+        embed.title = ':arrows_counterclockwise: Update available'
         embed.description = f'An update is available for Unifier!\n\nCurrent version: {current["version"]} (`{current["release"]}`)\nNew version: {version} (`{release}`)\n\n{desc}'
         embed.colour = 0xffcc00
         if should_reboot:
@@ -202,7 +202,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         else:
             print('Backup complete, requesting final confirmation.')
             embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/backup.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
-        embed.title = 'Start the upgrade?'
+        embed.title = ':arrow_up: Start the upgrade?'
         if no_backup:
             await interaction.response.edit_message(embed=embed, components=components)
         else:
@@ -223,7 +223,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             return await interaction.response.edit_message(components=components)
         print('Upgrade confirmed, upgrading Unifier...')
         print()
-        embed.title = 'Upgrading Unifier'
+        embed.title = ':arrow_up: Upgrading Unifier'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
         await interaction.response.edit_message(embed=embed, components=None)
         log(type='UPG', status='info', content='Starting upgrade')
@@ -257,7 +257,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             if should_reboot:
                 log(type='UPG', status='ok', content='Upgrade complete, reboot required')
                 t = round(time.time())+60
-                embed.title = 'Restart to apply upgrade'
+                embed.title = ':white_check_mark: Restart to apply upgrade'
                 embed.description = f'The upgrade was successful. The bot will reboot <t:{t}:R> to apply the upgrades.'
                 embed.colour = 0x00ff00
                 components = discord.ui.MessageComponents(
@@ -269,14 +269,14 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 await msg.edit(embed=embed,components=components)
                 try:
                     interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
-                    embed.title = 'Restart delayed'
+                    embed.title = ':information_source: Restart delayed'
                     embed.description = 'Reboot was cancelled, please reboot the bot manually.'
                     return await interaction.response.edit_message(embed=embed,components=None)
                 except:
-                    embed.title = 'Restarting...'
+                    embed.title = ':warning: Restarting...'
                     embed.description = 'The bot will reboot NOW!'
                     await msg.edit(embed=embed,components=None)
-                    reboot('unifier','unifier.py','unifier')
+                    reboot()
                     return
 
             else:
@@ -286,13 +286,13 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                     log(type='UPG', status='ok', content='Restarting extension: '+ cog)
                     self.bot.reload_extension(cog)
                 log(type='UPG', status='ok', content='Upgrade complete')
-                embed.title = 'Upgrade successful'
+                embed.title = ':white_check_mark: Upgrade successful'
                 embed.description = 'The upgrade was successful! :partying_face:'
                 embed.colour = 0x00ff00
                 await msg.edit(embed=embed)
         except:
             log(type='UPG', status='error', content='Upgrade failed, attempting rollback')
-            embed.title = 'Upgrade failed'
+            embed.title = ':x: Upgrade failed'
             try:
                 log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/unifier.py')
                 status(os.system('cp ' + os.getcwd() + '/old/unifier.py ' + os.getcwd() + '/unifier.py'))
