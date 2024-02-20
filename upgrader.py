@@ -61,6 +61,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
     """Upgrader makes it easy for Unifier admins to update the bot to have the latest features.
 
     Developed by Green"""
+
     def __init__(self,bot):
         self.bot = bot
 
