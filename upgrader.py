@@ -155,9 +155,10 @@ class Upgrader(commands.Cog):
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
         print('Upgrade confirmed, preparing...')
-        embed.title = 'Backing up...'
-        embed.description = 'Your data is being backed up.'
-        await interaction.response.edit_message(embed=embed, components=None)
+        if not no_backup:
+            embed.title = 'Backing up...'
+            embed.description = 'Your data is being backed up.'
+            await interaction.response.edit_message(embed=embed, components=None)
         try:
             if no_backup:
                 raise ValueError()
@@ -198,7 +199,10 @@ class Upgrader(commands.Cog):
             print('Backup complete, requesting final confirmation.')
             embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/backup.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         embed.title = 'Start the upgrade?'
-        await msg.edit(embed=embed, components=components)
+        if no_backup:
+            await interaction.response.edit_message(embed=embed, components=components)
+        else:
+            await msg.edit(embed=embed, components=components)
         try:
             interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
         except:
