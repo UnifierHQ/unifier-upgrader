@@ -67,10 +67,20 @@ class Upgrader(commands.Cog):
             return
         args = args.split(' ')
         force = False
+        ignore_backup = False
+        no_backup = False
         if 'force' in args:
             if not ctx.author.id==owner:
                 return await ctx.send('Only the instance owner can force upgrades!')
             force = True
+        if 'ignore-backup' in args:
+            if not ctx.author.id == owner:
+                return await ctx.send('Only the instance owner can ignore backup failures!')
+            ignore_backup = True
+        if 'no-backup' in args:
+            if not ctx.author.id == owner:
+                return await ctx.send('Only the instance owner can skip backups!')
+            no_backup = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
         msg = await ctx.send(embed=embed)
         try:
@@ -149,6 +159,8 @@ class Upgrader(commands.Cog):
         embed.description = 'Your data is being backed up.'
         await interaction.response.edit_message(embed=embed, components=None)
         try:
+            if no_backup:
+                raise ValueError()
             folder = os.getcwd() + '/old'
             try:
                 os.mkdir(folder)
@@ -169,15 +181,23 @@ class Upgrader(commands.Cog):
             print('Backing up: ' + os.getcwd() + '/config.json')
             os.system('cp ' + os.getcwd() + '/config.json ' + os.getcwd() + '/old/config.json')
         except:
-            print('Backup failed, abort upgrade.')
-            embed.title = 'Backup failed'
-            embed.description = 'Unifier could not create a backup. The upgrade has been aborted.'
-            embed.colour = 0xff0000
-            await msg.edit(embed=embed)
-            raise
-        print('Backup complete, requesting final confirmation.')
+            if no_backup:
+                print('Backup skipped, requesting final confirmation.')
+                embed.description = '- :x: Your files **COULD NOT BE BACKED UP**! Data loss or system failures may occur if the upgrade fails!\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
+            elif ignore_backup:
+                print('Backup failed, continuing anyways')
+                embed.description = '- :x: Your files have **NOT BEEN BACKED UP**! Data loss or system failures may occur if the upgrade fails!\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
+            else:
+                print('Backup failed, abort upgrade.')
+                embed.title = 'Backup failed'
+                embed.description = 'Unifier could not create a backup. The upgrade has been aborted.'
+                embed.colour = 0xff0000
+                await msg.edit(embed=embed)
+                raise
+        else:
+            print('Backup complete, requesting final confirmation.')
+            embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/backup.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         embed.title = 'Start the upgrade?'
-        embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/backup.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         await msg.edit(embed=embed, components=components)
         try:
             interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
