@@ -283,6 +283,8 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
                 await msg.edit(embed=embed)
                 for cog in list(self.bot.extensions):
+                    if 'bridge_revolt' in cog:
+                        continue
                     log(type='UPG', status='ok', content='Restarting extension: '+ cog)
                     self.bot.reload_extension(cog)
                 log(type='UPG', status='ok', content='Upgrade complete')
