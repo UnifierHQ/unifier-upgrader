@@ -566,9 +566,12 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
             log(type='INS', status='info', content='Stopping Revolt instance for upgrade')
-            await self.bot.revolt_session.close()
-            del self.bot.revolt_client
-            del self.bot.revolt_session
+            try:
+                await self.bot.revolt_session.close()
+                del self.bot.revolt_client
+                del self.bot.revolt_session
+            except:
+                pass
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_revolt/bridge_revolt.py')
             status(os.system(
                 'cp ' + os.getcwd() + '/update_revolt/bridge_revolt.py' + ' ' + os.getcwd() + '/cogs/bridge_revolt.py'))
