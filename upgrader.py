@@ -581,7 +581,12 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
             await msg.edit(embed=embed)
             log(type='UPG', status='ok', content='Restarting extension: cogs.bridge_revolt')
-            self.bot.reload_extension('cogs.bridge_revolt')
+            try:
+                self.bot.reload_extension('cogs.bridge_revolt')
+            except discord.ext.commands.errors.ExtensionNotLoaded:
+                self.bot.load_extension('cogs.bridge_revolt')
+            except:
+                raise
             log(type='UPG', status='ok', content='Upgrade complete')
             embed.title = 'Upgrade successful'
             embed.description = 'The upgrade was successful! :partying_face:'
