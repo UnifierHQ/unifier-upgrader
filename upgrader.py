@@ -584,7 +584,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             try:
                 self.bot.reload_extension('cogs.bridge_revolt')
             except discord.ext.commands.errors.ExtensionNotLoaded:
-                self.bot.load_extension('cogs.bridge_revolt')
+                pass
             except:
                 raise
             log(type='UPG', status='ok', content='Upgrade complete')
