@@ -717,9 +717,9 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             await msg.edit(embed=embed)
             log(type='INS', status='info', content='Stopping Guilded instance for upgrade')
             try:
-                await self.bot.guilded_session.close()
+                await self.bot.guilded_client.close()
+                self.bot.guilded_client_task.cancel()
                 del self.bot.guilded_client
-                del self.bot.guilded_session
             except:
                 pass
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_guilded/bridge_guilded.py')
