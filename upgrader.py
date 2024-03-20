@@ -720,6 +720,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 await self.bot.guilded_client.close()
                 self.bot.guilded_client_task.cancel()
                 del self.bot.guilded_client
+                self.bot.unload_extension('cogs.bridge_guilded')
             except:
                 pass
             log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_guilded/bridge_guilded.py')
@@ -732,7 +733,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             await msg.edit(embed=embed)
             log(type='UPG', status='ok', content='Restarting extension: cogs.bridge_guilded')
             try:
-                self.bot.reload_extension('cogs.bridge_guilded')
+                self.bot.load_extension('cogs.bridge_guilded')
             except discord.ext.commands.errors.ExtensionNotLoaded:
                 pass
             except:
