@@ -89,8 +89,8 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         msg = await ctx.send(embed=embed)
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
-            os.system(
-                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check')
+            await self.bot.loop.run_in_executor(None, lambda: os.system(
+                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check'))
             with open('update.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/update.json', 'r') as file:
