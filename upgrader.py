@@ -185,6 +185,8 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             os.system('cp ' + os.getcwd() + '/data.json ' + os.getcwd() + '/old/data.json')
             print('Backing up: ' + os.getcwd() + '/config.json')
             os.system('cp ' + os.getcwd() + '/config.json ' + os.getcwd() + '/old/config.json')
+            print('Backing up: ' + os.getcwd() + '/update.json')
+            os.system('cp ' + os.getcwd() + '/update.json ' + os.getcwd() + '/old/update.json')
         except:
             if no_backup:
                 print('Backup skipped, requesting final confirmation.')
@@ -201,7 +203,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 raise
         else:
             print('Backup complete, requesting final confirmation.')
-            embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/backup.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
+            embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/old.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         embed.title = ':arrow_up: Start the upgrade?'
         if no_backup:
             await interaction.response.edit_message(embed=embed, components=components)
