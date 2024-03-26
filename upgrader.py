@@ -54,6 +54,7 @@ with open('config.json', 'r') as file:
 owner = data['owner']
 admins = data['admin_ids']
 branch = data['branch']
+check_endpoint = data['check_endpoint']
 files_endpoint = data['files_endpoint']
 
 class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
@@ -89,7 +90,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             await self.bot.loop.run_in_executor(None, lambda: os.system(
-                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
             with open('update.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/update.json', 'r') as file:
@@ -331,7 +332,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             status(os.system(
-                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
             with open('upgrader.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/upgrader.json', 'r') as file:
@@ -466,7 +467,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             status(os.system(
-                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
             with open('revolt.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/revolt.json', 'r') as file:
@@ -616,7 +617,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             status(os.system(
-                'git clone --branch ' + branch + ' ' + files_endpoint + '/unifier-version.git ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
             with open('guilded.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/guilded.json', 'r') as file:
