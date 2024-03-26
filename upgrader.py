@@ -54,7 +54,6 @@ with open('config.json', 'r') as file:
 owner = data['owner']
 admins = data['admin_ids']
 branch = data['branch']
-check_endpoint = data['check_endpoint']
 files_endpoint = data['files_endpoint']
 
 class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
