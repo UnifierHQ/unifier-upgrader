@@ -137,27 +137,30 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             discord.ui.Button(style=discord.ButtonStyle.green, label='Upgrade', custom_id=f'accept', disabled=False),
             discord.ui.Button(style=discord.ButtonStyle.gray, label='Nevermind', custom_id=f'reject', disabled=False)
         ]
-        btns = discord.ui.ActionRow(row[0], row[1])
-        components = discord.ui.MessageComponents(btns)
-        await msg.edit(embed=embed, components=components)
+        btns = discord.ui.View()
+        btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+        btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+        await msg.edit(embed=embed, view=btns)
 
         def check(interaction):
             return interaction.user.id == ctx.author.id and interaction.message.id == msg.id
 
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, preparing...')
         if not no_backup:
             embed.title = 'Backing up...'
@@ -206,23 +209,25 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/old.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         embed.title = ':arrow_up: Start the upgrade?'
         if no_backup:
-            await interaction.response.edit_message(embed=embed, components=components)
+            await interaction.response.edit_message(embed=embed, view=btns)
         else:
-            await msg.edit(embed=embed, components=components)
+            await msg.edit(embed=embed, view=btns)
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, upgrading Unifier...')
         print()
         embed.title = ':arrow_up: Upgrading Unifier'
@@ -260,27 +265,10 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 log(type='UPG', status='ok', content='Upgrade complete, reboot required')
                 t = round(time.time())+60
                 embed.title = ':white_check_mark: Restart to apply upgrade'
-                embed.description = f'The upgrade was successful. The bot will reboot <t:{t}:R> to apply the upgrades.'
+                embed.description = f'The upgrade was successful. Please reboot the bot.'
                 embed.colour = 0x00ff00
-                components = discord.ui.MessageComponents(
-                    discord.ui.ActionRow(
-                        discord.ui.Button(style=discord.ButtonStyle.gray, label='Cancel',
-                                          disabled=False)
-                    )
-                )
-                await msg.edit(embed=embed,components=components)
-                try:
-                    interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
-                    embed.title = ':information_source: Restart delayed'
-                    embed.description = 'Reboot was cancelled, please reboot the bot manually.'
-                    return await interaction.response.edit_message(embed=embed,components=None)
-                except:
-                    embed.title = ':warning: Restarting...'
-                    embed.description = 'The bot will reboot NOW!'
-                    await msg.edit(embed=embed,components=None)
-                    reboot()
-                    return
-
+                await msg.edit(embed=embed)
+                return
             else:
                 embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
                 await msg.edit(embed=embed)
@@ -366,45 +354,50 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             discord.ui.Button(style=discord.ButtonStyle.green, label='Upgrade', custom_id=f'accept', disabled=False),
             discord.ui.Button(style=discord.ButtonStyle.gray, label='Nevermind', custom_id=f'reject', disabled=False)
         ]
-        btns = discord.ui.ActionRow(row[0], row[1])
-        components = discord.ui.MessageComponents(btns)
-        await msg.edit(embed=embed, components=components)
+        btns = discord.ui.View()
+        btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+        btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+        await msg.edit(embed=embed, view=btns)
 
         def check(interaction):
             return interaction.user.id == ctx.author.id and interaction.message.id == msg.id
 
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
         embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Unifier Upgrader will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
-        await interaction.response.edit_message(embed=embed, components=components)
+        await interaction.response.edit_message(embed=embed, view=btns)
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, upgrading Unifier Upgrader...')
         print()
         embed.title = 'Upgrading Unifier Upgrader'
@@ -501,45 +494,50 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             discord.ui.Button(style=discord.ButtonStyle.green, label='Upgrade', custom_id=f'accept', disabled=False),
             discord.ui.Button(style=discord.ButtonStyle.gray, label='Nevermind', custom_id=f'reject', disabled=False)
         ]
-        btns = discord.ui.ActionRow(row[0], row[1])
-        components = discord.ui.MessageComponents(btns)
-        await msg.edit(embed=embed, components=components)
+        btns = discord.ui.View()
+        btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+        btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+        await msg.edit(embed=embed, view=btns)
 
         def check(interaction):
             return interaction.user.id == ctx.author.id and interaction.message.id == msg.id
 
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
         embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Revolt Support will be wiped, unless they are a part of the new upgrade.\n- :mobile_phone_off: Your Revolt bot instance will be powered off during the upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
-        await interaction.response.edit_message(embed=embed, components=components)
+        await interaction.response.edit_message(embed=embed, view=btns)
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, upgrading Revolt Support...')
         print()
         embed.title = 'Upgrading Revolt Support'
@@ -651,45 +649,50 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             discord.ui.Button(style=discord.ButtonStyle.green, label='Upgrade', custom_id=f'accept', disabled=False),
             discord.ui.Button(style=discord.ButtonStyle.gray, label='Nevermind', custom_id=f'reject', disabled=False)
         ]
-        btns = discord.ui.ActionRow(row[0], row[1])
-        components = discord.ui.MessageComponents(btns)
-        await msg.edit(embed=embed, components=components)
+        btns = discord.ui.View()
+        btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+        btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+        await msg.edit(embed=embed, view=btns)
 
         def check(interaction):
             return interaction.user.id == ctx.author.id and interaction.message.id == msg.id
 
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
         embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Guilded Support will be wiped, unless they are a part of the new upgrade.\n- :mobile_phone_off: Your Guilded bot instance will be powered off during the upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
-        await interaction.response.edit_message(embed=embed, components=components)
+        await interaction.response.edit_message(embed=embed, view=btns)
         try:
-            interaction = await self.bot.wait_for("component_interaction", check=check, timeout=60.0)
+            interaction = await self.bot.wait_for("interaction", check=check, timeout=60.0)
         except:
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await msg.edit(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await msg.edit(view=btns)
         if interaction.custom_id == 'reject':
             row[0].disabled = True
             row[1].disabled = True
-            btns = discord.ui.ActionRow(row[0], row[1])
-            components = discord.ui.MessageComponents(btns)
-            return await interaction.response.edit_message(components=components)
+            btns = discord.ui.View()
+            btns.add_item(discord.ui.DynamicItem(row[0], row=0))
+            btns.add_item(discord.ui.DynamicItem(row[1], row=0))
+            return await interaction.response.edit_message(view=btns)
         print('Upgrade confirmed, upgrading Guilded Support...')
         print()
         embed.title = 'Upgrading Guilded Support'
