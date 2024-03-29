@@ -165,7 +165,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         if not no_backup:
             embed.title = 'Backing up...'
             embed.description = 'Your data is being backed up.'
-            await interaction.response.edit_message(embed=embed, components=None)
+            await interaction.response.edit_message(embed=embed, view=None)
         try:
             if no_backup:
                 raise ValueError()
@@ -232,7 +232,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         print()
         embed.title = ':arrow_up: Upgrading Unifier'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
-        await interaction.response.edit_message(embed=embed, components=None)
+        await interaction.response.edit_message(embed=embed, view=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             log(type='GIT',status='info',content='Purging old update files')
@@ -402,7 +402,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         print()
         embed.title = 'Upgrading Unifier Upgrader'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
-        await interaction.response.edit_message(embed=embed, components=None)
+        await interaction.response.edit_message(embed=embed, view=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             log(type='GIT', status='info', content='Purging old update files')
@@ -542,7 +542,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         print()
         embed.title = 'Upgrading Revolt Support'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
-        await interaction.response.edit_message(embed=embed, components=None)
+        await interaction.response.edit_message(embed=embed, view=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             log(type='GIT', status='info', content='Purging old update files')
@@ -697,7 +697,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         print()
         embed.title = 'Upgrading Guilded Support'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
-        await interaction.response.edit_message(embed=embed, components=None)
+        await interaction.response.edit_message(embed=embed, view=None)
         log(type='UPG', status='info', content='Starting upgrade')
         try:
             log(type='GIT', status='info', content='Purging old update files')
