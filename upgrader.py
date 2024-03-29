@@ -756,5 +756,5 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             await msg.edit(embed=embed)
             raise
 
-def setup(bot):
-    bot.add_cog(Upgrader(bot))
+async def setup(bot):
+    await bot.add_cog(Upgrader(bot))
