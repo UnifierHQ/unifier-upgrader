@@ -50,7 +50,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
 
     def __init__(self,bot):
         self.bot = bot
-        self.logger = log.buildlogger(self.bot.package, 'upgrader', self.bot.loglevel)
+        self.logger = log.buildlogger(self.bot.package, 'upgrader', self.bot.loglevel, handler=self.bot.handler)
 
     @commands.command(hidden=True, aliases=['update'])
     async def upgrade(self, ctx, *, args=''):
