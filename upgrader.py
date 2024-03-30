@@ -21,21 +21,16 @@ from discord.ext import commands
 import os
 import json
 import time
+from utils import log
 
-def log(type='???',status='ok',content='None'):
-    from time import gmtime, strftime
-    time1 = strftime("%Y.%m.%d %H:%M:%S", gmtime())
-    if status=='ok':
-        status = ' OK  '
-    elif status=='error':
-        status = 'ERROR'
-    elif status=='warn':
-        status = 'WARN '
-    elif status=='info':
-        status = 'INFO '
-    else:
-        raise ValueError('Invalid status type provided')
-    print(f'[{type} | {time1} | {status}] {content}')
+with open('config.json', 'r') as file:
+    data = json.load(file)
+
+owner = data['owner']
+admins = data['admin_ids']
+branch = data['branch']
+check_endpoint = data['check_endpoint']
+files_endpoint = data['files_endpoint']
 
 def status(code):
     if code != 0:
@@ -48,15 +43,6 @@ def reboot():
     os.system(f"screen -S unifier -dm bash -c 'cd {os.getcwd()} && exec python3.11 unifier.py'")
     os.system('screen -X -S %s quit' % pid)
 
-with open('config.json', 'r') as file:
-    data = json.load(file)
-
-owner = data['owner']
-admins = data['admin_ids']
-branch = data['branch']
-check_endpoint = data['check_endpoint']
-files_endpoint = data['files_endpoint']
-
 class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
     """Upgrader makes it easy for Unifier admins to update the bot to have the latest features.
 
@@ -64,6 +50,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
 
     def __init__(self,bot):
         self.bot = bot
+        self.logger = log.buildlogger(self.bot.package, 'upgrader', self.bot.loglevel)
 
     @commands.command(hidden=True, aliases=['update'])
     async def upgrade(self, ctx, *, args=''):
@@ -126,8 +113,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = 'Unifier is up-to-date.'
             embed.colour = 0x00ff00
             return await msg.edit(embed=embed)
-        print('Upgrade available: '+current['version']+' ==> '+new['version'])
-        print('Confirm upgrade through Discord.')
+        self.logger.info('Upgrade available: '+current['version']+' ==> '+new['version'])
         embed.title = ':arrows_counterclockwise: Update available'
         embed.description = f'An update is available for Unifier!\n\nCurrent version: {current["version"]} (`{current["release"]}`)\nNew version: {version} (`{release}`)\n\n{desc}'
         embed.colour = 0xffcc00
@@ -158,7 +144,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, preparing...')
+        self.logger.info('Upgrade confirmed, preparing...')
         if not no_backup:
             embed.title = 'Backing up...'
             embed.description = 'Your data is being backed up.'
@@ -177,32 +163,32 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             except:
                 pass
             for file in os.listdir(os.getcwd() + '/cogs'):
-                print('Backing up: '+os.getcwd() + '/cogs/' + file)
+                self.logger.debug('Backing up: '+os.getcwd() + '/cogs/' + file)
                 os.system('cp ' + os.getcwd() + '/cogs/' + file + ' ' + os.getcwd() + '/old/cogs/' + file)
-            print('Backing up: ' + os.getcwd() + '/unifier.py')
+            self.logger.debug('Backing up: ' + os.getcwd() + '/unifier.py')
             os.system('cp ' + os.getcwd() + '/unifier.py ' + os.getcwd() + '/old/unifier.py')
-            print('Backing up: ' + os.getcwd() + '/data.json')
+            self.logger.debug('Backing up: ' + os.getcwd() + '/data.json')
             os.system('cp ' + os.getcwd() + '/data.json ' + os.getcwd() + '/old/data.json')
-            print('Backing up: ' + os.getcwd() + '/config.json')
+            self.logger.debug('Backing up: ' + os.getcwd() + '/config.json')
             os.system('cp ' + os.getcwd() + '/config.json ' + os.getcwd() + '/old/config.json')
-            print('Backing up: ' + os.getcwd() + '/update.json')
+            self.logger.debug('Backing up: ' + os.getcwd() + '/update.json')
             os.system('cp ' + os.getcwd() + '/update.json ' + os.getcwd() + '/old/update.json')
         except:
             if no_backup:
-                print('Backup skipped, requesting final confirmation.')
+                self.logger.warn('Backup skipped, requesting final confirmation.')
                 embed.description = '- :x: Your files have **NOT BEEN BACKED UP**! Data loss or system failures may occur if the upgrade fails!\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
             elif ignore_backup:
-                print('Backup failed, continuing anyways')
+                self.logger.warn('Backup failed, continuing anyways')
                 embed.description = '- :x: Your files **COULD NOT BE BACKED UP**! Data loss or system failures may occur if the upgrade fails!\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
             else:
-                print('Backup failed, abort upgrade.')
+                self.logger.error('Backup failed, abort upgrade.')
                 embed.title = 'Backup failed'
                 embed.description = 'Unifier could not create a backup. The upgrade has been aborted.'
                 embed.colour = 0xff0000
                 await msg.edit(embed=embed)
                 raise
         else:
-            print('Backup complete, requesting final confirmation.')
+            self.logger.info('Backup complete, requesting final confirmation.')
             embed.description = '- :inbox_tray: Your files have been backed up to `[Unifier root directory]/old.`\n- :wrench: Any modifications you made to Unifier will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         embed.title = ':arrow_up: Start the upgrade?'
         if no_backup:
@@ -223,41 +209,40 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, upgrading Unifier...')
-        print()
+        self.logger.debug('Upgrade confirmed, beginning upgrade')
         embed.title = ':arrow_up: Upgrading Unifier'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
         await interaction.response.edit_message(embed=embed, components=None)
-        log(type='UPG', status='info', content='Starting upgrade')
+        self.logger.info('Starting upgrade')
         try:
-            log(type='GIT',status='info',content='Purging old update files')
+            self.logger.debug('Purging old update files')
             os.system('rm -rf '+os.getcwd()+'/update')
-            log(type='GIT', status='info', content='Downloading from remote repository...')
+            self.logger.info('Downloading from remote repository...')
             os.system('git clone --branch '+branch+' '+files_endpoint+'/unifier.git '+os.getcwd()+'/update')
-            log(type='GIT', status='info', content='Confirming download...')
+            self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update/update.json', 'r')
             x.close()
-            log(type='GIT', status='ok', content='Download confirmed, proceeding with upgrade')
+            self.logger.debug('Download confirmed, proceeding with upgrade')
         except:
-            log(type='UPG', status='error', content='Download failed, no rollback required')
+            self.logger.exception('Download failed, no rollback required')
             embed.title = 'Upgrade failed'
             embed.description = 'Could not download updates. No rollback is required.'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
-            raise
+            return
         try:
-            log(type='INS', status='info', content='Installing upgrades')
+            self.logger.info('Installing upgrades')
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/unifier.py')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update/unifier.py')
             status(os.system('cp ' + os.getcwd() + '/update/unifier.py ' + os.getcwd() + '/unifier.py'))
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/update.json')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_check/update.json')
             status(os.system('cp ' + os.getcwd() + '/update_check/update.json ' + os.getcwd() + '/update.json'))
             for file in os.listdir(os.getcwd() + '/update/cogs'):
-                log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update/cogs/'+file)
+                self.logger.debug('Installing: ' + os.getcwd() + '/update/cogs/'+file)
                 status(os.system('cp ' + os.getcwd() + '/update/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file))
             if should_reboot:
-                log(type='UPG', status='ok', content='Upgrade complete, reboot required')
+                self.logger.info('Upgrade complete, reboot required')
                 t = round(time.time())+60
                 embed.title = ':white_check_mark: Restart to apply upgrade'
                 embed.description = f'The upgrade was successful. The bot will reboot <t:{t}:R> to apply the upgrades.'
@@ -282,40 +267,43 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                     return
 
             else:
+                self.logger.info('Restarting extensions')
                 embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
                 await msg.edit(embed=embed)
                 for cog in list(self.bot.extensions):
                     if 'bridge_revolt' in cog:
                         continue
-                    log(type='UPG', status='ok', content='Restarting extension: '+ cog)
+                    self.logger.debug('Restarting extension: '+ cog)
                     self.bot.reload_extension(cog)
-                log(type='UPG', status='ok', content='Upgrade complete')
+                self.logger.info('Upgrade complete')
                 embed.title = ':white_check_mark: Upgrade successful'
                 embed.description = 'The upgrade was successful! :partying_face:'
                 embed.colour = 0x00ff00
                 await msg.edit(embed=embed)
         except:
-            log(type='UPG', status='error', content='Upgrade failed, attempting rollback')
+            self.logger.exception('Upgrade failed, attempting rollback')
             embed.title = ':x: Upgrade failed'
             try:
-                log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/unifier.py')
+                self.logger.debug('Reverting: ' + os.getcwd() + '/unifier.py')
                 status(os.system('cp ' + os.getcwd() + '/old/unifier.py ' + os.getcwd() + '/unifier.py'))
-                log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/data.json')
+                self.logger.debug('Reverting: ' + os.getcwd() + '/data.json')
                 status(os.system('cp ' + os.getcwd() + '/old/data.json ' + os.getcwd() + '/data.json'))
-                log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/update.json')
+                self.logger.debug('Reverting: ' + os.getcwd() + '/update.json')
                 status(os.system('cp ' + os.getcwd() + '/old/update.json ' + os.getcwd() + '/update.json'))
-                log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/config.json')
+                self.logger.debug('Reverting: ' + os.getcwd() + '/config.json')
                 status(os.system('cp ' + os.getcwd() + '/old/config.json ' + os.getcwd() + '/config.json'))
                 for file in os.listdir(os.getcwd() + '/old/cogs'):
-                    log(type='RBK', status='info', content='Reverting: ' + os.getcwd() + '/cogs/'+file)
+                    self.logger.debug('Reverting: ' + os.getcwd() + '/cogs/'+file)
                     status(os.system('cp ' + os.getcwd() + '/old/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file))
-                log(type='RBK', status='ok', content='Rollback success')
+                self.logger.info('Rollback success')
                 embed.description = 'The upgrade failed, and all files have been rolled back.'
             except:
-                log(type='RBK', status='error', content='Rollback failed')
-                embed.description = 'The upgrade failed, and the bot may now be in a crippled state.'
+                embed.colour = 0xff0000
+                self.logger.exception('Rollback failed')
+                self.logger.critical('The rollback failed. Visit https://unichat-wiki.pixels.onl/setup-selfhosted/upgrading-unifier/manual-rollback for recovery steps.')
+                embed.description = 'The upgrade failed, and the bot may now be in a crippled state.\nPlease check console logs for more info.'
             await msg.edit(embed=embed)
-            raise
+            return
 
     @commands.command(name='upgrade-upgrader', hidden=True, aliases=['update-upgrader'])
     async def upgrade_upgrader(self, ctx, *, args=''):
@@ -357,8 +345,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = 'Unifier Upgrader is up-to-date.'
             embed.colour = 0x00ff00
             return await msg.edit(embed=embed)
-        print('Upgrade available: ' + current['version'] + ' ==> ' + new['version'])
-        print('Confirm upgrade through Discord.')
+        self.logger.info('Upgrade available: ' + current['version'] + ' ==> ' + new['version'])
         embed.title = 'Update available'
         embed.description = f'An update is available for Unifier Upgrader!\n\nCurrent version: {current["version"]} (`{current["release"]}`)\nNew version: {version} (`{release}`)\n\n{desc}'
         embed.colour = 0xffcc00
@@ -387,7 +374,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, preparing...')
+        self.logger.info('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
         embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Unifier Upgrader will be wiped, unless they are a part of the new upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         await interaction.response.edit_message(embed=embed, components=components)
@@ -405,52 +392,52 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, upgrading Unifier Upgrader...')
-        print()
+        self.logger.debug('Upgrade confirmed, beginning upgrade')
         embed.title = 'Upgrading Unifier Upgrader'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
         await interaction.response.edit_message(embed=embed, components=None)
-        log(type='UPG', status='info', content='Starting upgrade')
+        self.logger.info('Starting upgrade')
         try:
-            log(type='GIT', status='info', content='Purging old update files')
+            self.logger.debug('Purging old update files')
             os.system('rm -rf ' + os.getcwd() + '/update_upgrader')
-            log(type='GIT', status='info', content='Downloading from remote repository...')
+            self.logger.info('Downloading from remote repository...')
             status(os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader'))
-            log(type='GIT', status='info', content='Confirming download...')
+            self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update_upgrader/upgrader.py', 'r')
             x.close()
-            log(type='GIT', status='ok', content='Download confirmed, proceeding with upgrade')
+            self.logger.debug('Download confirmed, proceeding with upgrade')
         except:
-            log(type='UPG', status='error', content='Download failed, no rollback required')
+            self.logger.exception('Download failed, no rollback required')
             embed.title = 'Upgrade failed'
             embed.description = 'Could not download updates. No rollback is required.'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
-            raise
+            return
         try:
-            log(type='INS', status='info', content='Installing upgrades')
+            self.logger.info('Installing upgrades')
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_upgrader/upgrader.py')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_upgrader/upgrader.py')
             status(os.system('cp ' + os.getcwd() + '/update_upgrader/upgrader.py' + ' ' + os.getcwd() + '/cogs/upgrader.py'))
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/upgrader.json')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_check/upgrader.json')
             status(os.system('cp ' + os.getcwd() + '/update_check/upgrader.json' + ' ' + os.getcwd() + '/upgrader.json'))
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='UPG', status='ok', content='Restarting extension: cogs.upgrader')
+            self.logger.info('Restarting extensions')
+            self.logger.debug('Restarting extension: cogs.upgrader')
             self.bot.reload_extension('cogs.upgrader')
-            log(type='UPG', status='ok', content='Upgrade complete')
+            self.logger.info('Upgrade complete')
             embed.title = 'Upgrade successful'
             embed.description = 'The upgrade was successful! :partying_face:'
             embed.colour = 0x00ff00
             await msg.edit(embed=embed)
         except:
-            log(type='UPG', status='error', content='Upgrade failed')
+            self.logger.exception('Upgrade failed')
             embed.title = 'Upgrade failed'
             embed.description = 'The upgrade failed.'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
-            raise
+            return
 
     @commands.command(name='upgrade-revolt', hidden=True, aliases=['upgrade-revolt-support'])
     async def upgrade_revolt(self, ctx, *, args=''):
@@ -492,8 +479,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = 'Revolt Support is up-to-date.'
             embed.colour = 0x00ff00
             return await msg.edit(embed=embed)
-        print('Upgrade available: ' + current['version'] + ' ==> ' + new['version'])
-        print('Confirm upgrade through Discord.')
+        self.logger.info('Upgrade available: ' + current['version'] + ' ==> ' + new['version'])
         embed.title = 'Update available'
         embed.description = f'An update is available for Revolt Support!\n\nCurrent version: {current["version"]} (`{current["release"]}`)\nNew version: {version} (`{release}`)\n\n{desc}'
         embed.colour = 0xffcc00
@@ -522,7 +508,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, preparing...')
+        self.logger.info('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
         embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Revolt Support will be wiped, unless they are a part of the new upgrade.\n- :mobile_phone_off: Your Revolt bot instance will be powered off during the upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         await interaction.response.edit_message(embed=embed, components=components)
@@ -540,62 +526,62 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, upgrading Revolt Support...')
-        print()
+        self.logger.debug('Upgrade confirmed, beginning upgrade')
         embed.title = 'Upgrading Revolt Support'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
         await interaction.response.edit_message(embed=embed, components=None)
-        log(type='UPG', status='info', content='Starting upgrade')
+        self.logger.info('Starting upgrade')
         try:
-            log(type='GIT', status='info', content='Purging old update files')
+            self.logger.debug('Purging old update files')
             os.system('rm -rf ' + os.getcwd() + '/update_revolt')
-            log(type='GIT', status='info', content='Downloading from remote repository...')
+            self.logger.info('Downloading from remote repository...')
             status(os.system(
                 'git clone --branch main ' + files_endpoint + '/unifier-revolt.git ' + os.getcwd() + '/update_revolt'))
-            log(type='GIT', status='info', content='Confirming download...')
+            self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update_revolt/bridge_revolt.py', 'r')
             x.close()
-            log(type='GIT', status='ok', content='Download confirmed, proceeding with upgrade')
+            self.logger.debug('Download confirmed, proceeding with upgrade')
         except:
-            log(type='UPG', status='error', content='Download failed, no rollback required')
+            self.logger.exception('Download failed, no rollback required')
             embed.title = 'Upgrade failed'
             embed.description = 'Could not download updates. No rollback is required.'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
-            raise
+            return
         try:
-            log(type='INS', status='info', content='Installing upgrades')
+            self.logger.info('Installing upgrades')
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='INS', status='info', content='Stopping Revolt instance for upgrade')
+            self.logger.info('Stopping Revolt instance for upgrade')
             try:
                 await self.bot.revolt_session.close()
                 del self.bot.revolt_client
                 del self.bot.revolt_session
             except:
                 pass
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_revolt/bridge_revolt.py')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_revolt/bridge_revolt.py')
             status(os.system(
                 'cp ' + os.getcwd() + '/update_revolt/bridge_revolt.py' + ' ' + os.getcwd() + '/cogs/bridge_revolt.py'))
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/upgrader.json')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_check/upgrader.json')
             status(
                 os.system('cp ' + os.getcwd() + '/update_check/revolt.json' + ' ' + os.getcwd() + '/revolt.json'))
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='UPG', status='ok', content='Restarting extension: cogs.bridge_revolt')
+            self.logger.info('Restarting extensions')
+            self.logger.debug('Restarting extension: cogs.bridge_revolt')
             try:
                 self.bot.reload_extension('cogs.bridge_revolt')
             except discord.ext.commands.errors.ExtensionNotLoaded:
                 pass
             except:
                 raise
-            log(type='UPG', status='ok', content='Upgrade complete')
+            self.logger.info('Upgrade complete')
             embed.title = 'Upgrade successful'
             embed.description = 'The upgrade was successful! :partying_face:'
             embed.colour = 0x00ff00
             await msg.edit(embed=embed)
         except:
-            log(type='UPG', status='error', content='Upgrade failed')
+            self.logger.info('Upgrade failed')
             embed.title = 'Upgrade failed'
             embed.description = 'The upgrade failed.'
             embed.colour = 0xff0000
@@ -642,8 +628,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             embed.description = 'Guilded Support is up-to-date.'
             embed.colour = 0x00ff00
             return await msg.edit(embed=embed)
-        print('Upgrade available: ' + current['version'] + ' ==> ' + new['version'])
-        print('Confirm upgrade through Discord.')
+        self.logger.info('Upgrade available: ' + current['version'] + ' ==> ' + new['version'])
         embed.title = 'Update available'
         embed.description = f'An update is available for Guilded Support!\n\nCurrent version: {current["version"]} (`{current["release"]}`)\nNew version: {version} (`{release}`)\n\n{desc}'
         embed.colour = 0xffcc00
@@ -672,7 +657,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, preparing...')
+        self.logger.info('Upgrade confirmed, preparing...')
         embed.title = 'Start the upgrade?'
         embed.description = '- :x: Your files have **not** been backed up, as this is not a Unifier upgrade.\n- :wrench: Any modifications you made to Guilded Support will be wiped, unless they are a part of the new upgrade.\n- :mobile_phone_off: Your Guilded bot instance will be powered off during the upgrade.\n- :warning: Once started, you cannot abort the upgrade.'
         await interaction.response.edit_message(embed=embed, components=components)
@@ -690,34 +675,33 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             btns = discord.ui.ActionRow(row[0], row[1])
             components = discord.ui.MessageComponents(btns)
             return await interaction.response.edit_message(components=components)
-        print('Upgrade confirmed, upgrading Guilded Support...')
-        print()
+        self.logger.info('Upgrade confirmed, beginning upgrade')
         embed.title = 'Upgrading Guilded Support'
         embed.description = ':hourglass_flowing_sand: Downloading updates\n:x: Installing updates\n:x: Reloading modules'
         await interaction.response.edit_message(embed=embed, components=None)
-        log(type='UPG', status='info', content='Starting upgrade')
+        self.logger.info('Starting upgrade')
         try:
-            log(type='GIT', status='info', content='Purging old update files')
+            self.logger.debug('Purging old update files')
             os.system('rm -rf ' + os.getcwd() + '/update_guilded')
-            log(type='GIT', status='info', content='Downloading from remote repository...')
+            self.logger.info('Downloading from remote repository...')
             status(os.system(
                 'git clone --branch main ' + files_endpoint + '/unifier-guilded.git ' + os.getcwd() + '/update_guilded'))
-            log(type='GIT', status='info', content='Confirming download...')
+            self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update_guilded/bridge_guilded.py', 'r')
             x.close()
-            log(type='GIT', status='ok', content='Download confirmed, proceeding with upgrade')
+            self.logger.debug('Download confirmed, proceeding with upgrade')
         except:
-            log(type='UPG', status='error', content='Download failed, no rollback required')
+            self.logger.exception('Download failed, no rollback required')
             embed.title = 'Upgrade failed'
             embed.description = 'Could not download updates. No rollback is required.'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
-            raise
+            return
         try:
-            log(type='INS', status='info', content='Installing upgrades')
+            self.logger.info('Installing upgrades')
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='INS', status='info', content='Stopping Guilded instance for upgrade')
+            self.logger.info('Stopping Guilded instance for upgrade')
             try:
                 await self.bot.guilded_client.close()
                 self.bot.guilded_client_task.cancel()
@@ -725,33 +709,34 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 self.bot.unload_extension('cogs.bridge_guilded')
             except:
                 pass
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_guilded/bridge_guilded.py')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_guilded/bridge_guilded.py')
             status(os.system(
                 'cp ' + os.getcwd() + '/update_guilded/bridge_guilded.py' + ' ' + os.getcwd() + '/cogs/bridge_guilded.py'))
-            log(type='INS', status='info', content='Installing: ' + os.getcwd() + '/update_check/upgrader.json')
+            self.logger.debug('Installing: ' + os.getcwd() + '/update_check/upgrader.json')
             status(
                 os.system('cp ' + os.getcwd() + '/update_check/guilded.json' + ' ' + os.getcwd() + '/guilded.json'))
             embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
             await msg.edit(embed=embed)
-            log(type='UPG', status='ok', content='Restarting extension: cogs.bridge_guilded')
+            self.logger.info('Restarting extensions')
+            self.logger.debug('Restarting extension: cogs.bridge_guilded')
             try:
                 self.bot.load_extension('cogs.bridge_guilded')
             except discord.ext.commands.errors.ExtensionNotLoaded:
                 pass
             except:
                 raise
-            log(type='UPG', status='ok', content='Upgrade complete')
+            self.logger.info('Upgrade complete')
             embed.title = 'Upgrade successful'
             embed.description = 'The upgrade was successful! :partying_face:'
             embed.colour = 0x00ff00
             await msg.edit(embed=embed)
         except:
-            log(type='UPG', status='error', content='Upgrade failed')
+            self.logger.exception('Upgrade failed')
             embed.title = 'Upgrade failed'
             embed.description = 'The upgrade failed.'
             embed.colour = 0xff0000
             await msg.edit(embed=embed)
-            raise
+            return
 
 def setup(bot):
     bot.add_cog(Upgrader(bot))
