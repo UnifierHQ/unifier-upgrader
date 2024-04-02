@@ -240,14 +240,16 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 olddeps = x.read().split('\n')
                 x.close()
             except:
+                self.logger.warn('Could not find requirements.txt, installing all dependencies')
                 olddeps = []
             for dep in olddeps:
                 try:
                     newdeps.remove(dep)
                 except:
                     pass
-            self.logger.debug('Installing: '+' '.join(newdeps))
-            status(os.system('python3.11 -m pip install ' + ' '.join(newdeps)))
+            if len(newdeps) > 0:
+                self.logger.debug('Installing: '+' '.join(newdeps))
+                status(os.system('python3.11 -m pip install ' + ' '.join(newdeps)))
         except:
             self.logger.exception('Dependency installation failed, no rollback required')
             embed.title = ':x: Upgrade failed'
@@ -261,6 +263,8 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             await msg.edit(embed=embed)
             self.logger.debug('Installing: ' + os.getcwd() + '/update/unifier.py')
             status(os.system('cp ' + os.getcwd() + '/update/unifier.py ' + os.getcwd() + '/unifier.py'))
+            self.logger.debug('Installing: ' + os.getcwd() + '/update/requirements.txt')
+            status(os.system('cp ' + os.getcwd() + '/update/requirements.txt ' + os.getcwd() + '/requirements.txt'))
             self.logger.debug('Installing: ' + os.getcwd() + '/update_check/update.json')
             status(os.system('cp ' + os.getcwd() + '/update_check/update.json ' + os.getcwd() + '/update.json'))
             for file in os.listdir(os.getcwd() + '/update/cogs'):
