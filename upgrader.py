@@ -231,6 +231,31 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             await msg.edit(embed=embed)
             return
         try:
+            self.logger.debug('Installing dependencies')
+            x = open('update/requirements.txt')
+            newdeps = x.read().split('\n')
+            x.close()
+            try:
+                x = open('requirements.txt')
+                olddeps = x.read().split('\n')
+                x.close()
+            except:
+                olddeps = []
+            for dep in olddeps:
+                try:
+                    newdeps.remove(dep)
+                except:
+                    pass
+            self.logger.debug('Installing: '+' '.join(newdeps))
+            status(os.system('python3.11 -m pip install ' + ' '.join(newdeps)))
+        except:
+            self.logger.exception('Dependency installation failed, no rollback required')
+            embed.title = ':x: Upgrade failed'
+            embed.description = 'Could not install dependencies. No rollback is required.'
+            embed.colour = 0xff0000
+            await msg.edit(embed=embed)
+            return
+        try:
             self.logger.info('Installing upgrades')
             embed.description = ':white_check_mark: Downloading updates\n:hourglass_flowing_sand: Installing updates\n:x: Reloading modules'
             await msg.edit(embed=embed)
@@ -241,6 +266,16 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             for file in os.listdir(os.getcwd() + '/update/cogs'):
                 self.logger.debug('Installing: ' + os.getcwd() + '/update/cogs/'+file)
                 status(os.system('cp ' + os.getcwd() + '/update/cogs/' + file + ' ' + os.getcwd() + '/cogs/' + file))
+            self.logger.debug('Updating config.json')
+            with open('config.json', 'r') as file:
+                oldcfg = json.load(file)
+            with open('update/config.json', 'r') as file:
+                newcfg = json.load(file)
+            for key in newcfg:
+                if not key in list(oldcfg.keys()):
+                    oldcfg.update({key: newcfg[key]})
+            with open('config.json', 'w') as file:
+                json.dump(oldcfg, file, indent=4)
             if should_reboot:
                 self.logger.info('Upgrade complete, reboot required')
                 t = round(time.time())+60
@@ -271,7 +306,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                 embed.description = ':white_check_mark: Downloading updates\n:white_check_mark: Installing updates\n:hourglass_flowing_sand: Reloading modules'
                 await msg.edit(embed=embed)
                 for cog in list(self.bot.extensions):
-                    if 'bridge_revolt' in cog:
+                    if 'bridge_revolt' in cog or 'bridge_guilded' in cog:
                         continue
                     self.logger.debug('Restarting extension: '+ cog)
                     self.bot.reload_extension(cog)
