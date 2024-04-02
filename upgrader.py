@@ -249,7 +249,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
                     pass
             if len(newdeps) > 0:
                 self.logger.debug('Installing: '+' '.join(newdeps))
-                status(os.system('python3.11 -m pip install ' + ' '.join(newdeps)))
+                status(os.system('python3 -m pip install ' + ' '.join(newdeps)))
         except:
             self.logger.exception('Dependency installation failed, no rollback required')
             embed.title = ':x: Upgrade failed'
