@@ -23,15 +23,6 @@ import json
 import time
 from utils import log
 
-with open('config.json', 'r') as file:
-    data = json.load(file)
-
-owner = data['owner']
-admins = data['admin_ids']
-branch = data['branch']
-check_endpoint = data['check_endpoint']
-files_endpoint = data['files_endpoint']
-
 def status(code):
     if code != 0:
         raise RuntimeError("upgrade failed")
@@ -54,22 +45,22 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
 
     @commands.command(hidden=True, aliases=['update'])
     async def upgrade(self, ctx, *, args=''):
-        if not ctx.author.id in admins:
+        if not ctx.author.id in self.bot.config['admin_ids']:
             return
         args = args.split(' ')
         force = False
         ignore_backup = False
         no_backup = False
         if 'force' in args:
-            if not ctx.author.id==owner:
+            if not ctx.author.id==self.bot.config['owner']:
                 return await ctx.send('Only the instance owner can force upgrades!')
             force = True
         if 'ignore-backup' in args:
-            if not ctx.author.id == owner:
+            if not ctx.author.id == self.bot.config['owner']:
                 return await ctx.send('Only the instance owner can ignore backup failures!')
             ignore_backup = True
         if 'no-backup' in args:
-            if not ctx.author.id == owner:
+            if not ctx.author.id == self.bot.config['owner']:
                 return await ctx.send('Only the instance owner can skip backups!')
             no_backup = True
         embed = discord.Embed(title=':inbox_tray: Checking for upgrades...', description='Getting latest version from remote')
@@ -77,7 +68,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             await self.bot.loop.run_in_executor(None, lambda: os.system(
-                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + self.bot.config['branch'] + ' ' + self.bot.config['check_endpoint'] + ' ' + os.getcwd() + '/update_check'))
             with open('update.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/update.json', 'r') as file:
@@ -218,7 +209,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             self.logger.debug('Purging old update files')
             os.system('rm -rf '+os.getcwd()+'/update')
             self.logger.info('Downloading from remote repository...')
-            os.system('git clone --branch '+branch+' '+files_endpoint+'/unifier.git '+os.getcwd()+'/update')
+            os.system('git clone --branch '+self.bot.config['branch']+' '+self.bot.config['files_endpoint']+'/unifier.git '+os.getcwd()+'/update')
             self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update/update.json', 'r')
             x.close()
@@ -346,12 +337,12 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
 
     @commands.command(name='upgrade-upgrader', hidden=True, aliases=['update-upgrader'])
     async def upgrade_upgrader(self, ctx, *, args=''):
-        if not ctx.author.id in admins:
+        if not ctx.author.id in self.bot.config['admin_ids']:
             return
         args = args.split(' ')
         force = False
         if 'force' in args:
-            if not ctx.author.id == owner:
+            if not ctx.author.id == self.bot.config['owner']:
                 return await ctx.send('Only the instance owner can force upgrades!')
             force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
@@ -359,7 +350,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             status(os.system(
-                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + self.bot.config['branch'] + ' ' + self.bot.config['check_endpoint'] + ' ' + os.getcwd() + '/update_check'))
             with open('upgrader.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/upgrader.json', 'r') as file:
@@ -440,7 +431,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             self.logger.debug('Purging old update files')
             os.system('rm -rf ' + os.getcwd() + '/update_upgrader')
             self.logger.info('Downloading from remote repository...')
-            status(os.system('git clone --branch main ' + files_endpoint + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader'))
+            status(os.system('git clone --branch main ' + self.bot.config['files_endpoint'] + '/unifier-upgrader.git ' + os.getcwd() + '/update_upgrader'))
             self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update_upgrader/upgrader.py', 'r')
             x.close()
@@ -480,12 +471,12 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
 
     @commands.command(name='upgrade-revolt', hidden=True, aliases=['upgrade-revolt-support'])
     async def upgrade_revolt(self, ctx, *, args=''):
-        if not ctx.author.id in admins:
+        if not ctx.author.id in self.bot.config['admin_ids']:
             return
         args = args.split(' ')
         force = False
         if 'force' in args:
-            if not ctx.author.id == owner:
+            if not ctx.author.id == self.bot.config['owner']:
                 return await ctx.send('Only the instance owner can force upgrades!')
             force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
@@ -493,7 +484,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             status(os.system(
-                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + self.bot.config['branch'] + ' ' + self.bot.config['check_endpoint'] + ' ' + os.getcwd() + '/update_check'))
             with open('revolt.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/revolt.json', 'r') as file:
@@ -575,7 +566,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             os.system('rm -rf ' + os.getcwd() + '/update_revolt')
             self.logger.info('Downloading from remote repository...')
             status(os.system(
-                'git clone --branch main ' + files_endpoint + '/unifier-revolt.git ' + os.getcwd() + '/update_revolt'))
+                'git clone --branch main ' + self.bot.config['files_endpoint'] + '/unifier-revolt.git ' + os.getcwd() + '/update_revolt'))
             self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update_revolt/bridge_revolt.py', 'r')
             x.close()
@@ -629,12 +620,12 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
 
     @commands.command(name='upgrade-guilded', hidden=True, aliases=['upgrade-guilded-support'])
     async def upgrade_guilded(self, ctx, *, args=''):
-        if not ctx.author.id in admins:
+        if not ctx.author.id in self.bot.config['admin_ids']:
             return
         args = args.split(' ')
         force = False
         if 'force' in args:
-            if not ctx.author.id == owner:
+            if not ctx.author.id == self.bot.config['owner']:
                 return await ctx.send('Only the instance owner can force upgrades!')
             force = True
         embed = discord.Embed(title='Checking for upgrades...', description='Getting latest version from remote')
@@ -642,7 +633,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
         try:
             os.system('rm -rf ' + os.getcwd() + '/update_check')
             status(os.system(
-                'git clone --branch ' + branch + ' ' + check_endpoint + ' ' + os.getcwd() + '/update_check'))
+                'git clone --branch ' + self.bot.config['branch'] + ' ' + self.bot.config['check_endpoint'] + ' ' + os.getcwd() + '/update_check'))
             with open('guilded.json', 'r') as file:
                 current = json.load(file)
             with open('update_check/guilded.json', 'r') as file:
@@ -724,7 +715,7 @@ class Upgrader(commands.Cog, name=':arrow_up: Upgrader'):
             os.system('rm -rf ' + os.getcwd() + '/update_guilded')
             self.logger.info('Downloading from remote repository...')
             status(os.system(
-                'git clone --branch main ' + files_endpoint + '/unifier-guilded.git ' + os.getcwd() + '/update_guilded'))
+                'git clone --branch main ' + self.bot.config['files_endpoint'] + '/unifier-guilded.git ' + os.getcwd() + '/update_guilded'))
             self.logger.debug('Confirming download...')
             x = open(os.getcwd() + '/update_guilded/bridge_guilded.py', 'r')
             x.close()
