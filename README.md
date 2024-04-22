@@ -8,7 +8,7 @@ Upgrader to upgrade Unifier core and extensions
 This is a plugin for Unifier which can manage updates for Unifier and installed plugins.
 
 ## Requirements
-Unifier v1.1.4 or newer is required.
+Unifier v1.1.12 or newer is required.
 
 ## Setup
 To install Unifier Upgrader, you can run `u!install-upgrader` on the bot. If you have a different GitHub user URL 
