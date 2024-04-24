@@ -1,3 +1,6 @@
+> [!NOTE]
+> Upgrader has been discontinued. We will make Upgrader a part of a new Extension Manager we are working on.
+
 # Unifier Upgrader
 Upgrader to upgrade Unifier core and extensions
 
